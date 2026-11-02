@@ -1,7 +1,12 @@
 import os
 from langchain_ollama import ChatOllama
 from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage
-from agent.tools import query_employee_db_vulnerable, query_employee_db_secure
+from agent.tools import (
+    query_employee_db_vulnerable,
+    query_employee_db_secure,
+    read_kb_article_vulnerable,
+    read_kb_article_secure
+)
 from agent.prompts import VULNERABLE_SYSTEM_PROMPT, HARDENED_SYSTEM_PROMPT
 
 class SecureAgentEngine:
@@ -16,21 +21,21 @@ class SecureAgentEngine:
     def execute(self, user_input: str, phase: int = 0) -> dict:
         """
         Executes agent workflow according to active security phase:
-        Phase 0: Vulnerable Baseline (Raw prompt + Raw DB tool)
-        Phase 1: Model Hardening (XML boundary + Hardened prompt + Raw DB tool)
-        Phase 2 & 3: Least-Privilege Backend (XML boundary + Hardened prompt + Sanitized DB tool)
+        Phase 0: Vulnerable Baseline (Raw prompt + Raw DB/KB tools)
+        Phase 1: Model Hardening (XML boundary + Hardened prompt + Raw DB/KB tools)
+        Phase 2 & 3: Least-Privilege & Context Sanitization (XML boundary + Hardened prompt + Sanitized tools)
         """
         if phase == 0:
             system_prompt = VULNERABLE_SYSTEM_PROMPT
-            tools = [query_employee_db_vulnerable]
+            tools = [query_employee_db_vulnerable, read_kb_article_vulnerable]
             formatted_input = user_input
         elif phase == 1:
             system_prompt = HARDENED_SYSTEM_PROMPT
-            tools = [query_employee_db_vulnerable]
+            tools = [query_employee_db_vulnerable, read_kb_article_vulnerable]
             formatted_input = f"<user_input>\n{user_input}\n</user_input>"
         else:
             system_prompt = HARDENED_SYSTEM_PROMPT
-            tools = [query_employee_db_secure]
+            tools = [query_employee_db_secure, read_kb_article_secure]
             formatted_input = f"<user_input>\n{user_input}\n</user_input>"
 
         llm_with_tools = self.llm.bind_tools(tools)
@@ -47,7 +52,9 @@ class SecureAgentEngine:
         if response.tool_calls:
             tool_map = {
                 "query_employee_db_secure": query_employee_db_secure,
-                "query_employee_db_vulnerable": query_employee_db_vulnerable
+                "query_employee_db_vulnerable": query_employee_db_vulnerable,
+                "read_kb_article_secure": read_kb_article_secure,
+                "read_kb_article_vulnerable": read_kb_article_vulnerable
             }
             for tool_call in response.tool_calls:
                 selected_tool = tool_map.get(tool_call["name"])

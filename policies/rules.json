@@ -10,6 +10,14 @@
     "bypass",
     "audit-2026"
   ],
+  "evasion_indicators": [
+    "space between every character",
+    "space between each letter",
+    "base64",
+    "rot13",
+    "\u200b",
+    "\u200c"
+  ],
   "restricted_targets": [
     "salary",
     "api_key",
