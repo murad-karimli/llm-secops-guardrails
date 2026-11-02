@@ -1,0 +1,20 @@
+{
+  "max_allowed_risk_score": 50,
+  "high_risk_keywords": [
+    "ignore all previous",
+    "disregard",
+    "system override",
+    "emergency protocol",
+    "dump",
+    "raw profile",
+    "bypass",
+    "audit-2026"
+  ],
+  "restricted_targets": [
+    "salary",
+    "api_key",
+    "sk-secret",
+    "compensation",
+    "credentials"
+  ]
+}
